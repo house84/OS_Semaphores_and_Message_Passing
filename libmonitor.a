@@ -1,0 +1,9 @@
+//Create Static Library
+//For monitor Functions
+
+void print(int x){
+
+	printf("%d\n", x); 
+
+}
+
