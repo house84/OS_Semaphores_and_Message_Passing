@@ -23,16 +23,20 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <time.h>
+#include "monitor.h"
 
 //Global Variable Defaults
 
-int m = 2; 								//Default Number of Producers
+//int m = 2; 								//Default Number of Producers
 int n = 6; 								//Default Number of Consumers
 int mytime = 100;					//Default time before Program Termination
 char logfile[100]; 				//Default logfile name
 
 
 int main(int argc, char *argv[]){
+
+	//Initialize Signal Handler
+	signal(SIGINT, signalHandler); 
 
 	//Set logfile Default
 	memset(logfile, '\0', sizeof(logfile)); 
@@ -87,7 +91,10 @@ int main(int argc, char *argv[]){
 	}
 
 	//Test Args
-	printf("-o: %s  -p: %d  -c: %d  -t: %d\n", logfile, m, n, mytime); 
+	printf("-o: %s  -p: %d  -c: %d  -t: %d\n", logfile, m, n, mytime);
+
+	//Test Calling Library
+	testPrint(m); 
 
 	return 0; 
 

@@ -1,6 +1,14 @@
 CC = gcc
 CFLAGS = -g
-LDLIBS =
+LDFLAGS =
+LIBPATH = -L . -l 
+
+TARGETLIB = libmonitor.a
+LIBOBJ = monitorfunc.o 
+LIBC = monitorfunc.c
+LIBHEADERS = shared.h
+
+HEADERS = monitor.h
 
 TARGET1 = monitor
 OBJ1 = monitor.o
@@ -13,10 +21,13 @@ OBJ3 = producer.o
 
 .SUFFIXES: .c .o
 
-ALL: $(TARGET1) $(TARGET2) $(TARGET3)
+ALL: $(TARGETLIB) $(TARGET1) $(TARGET2) $(TARGET3)
 
-$(TARGET1): $(OBJ1)
-					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(LDLIBS)
+$(LIBOBJ): $(LIBC)
+					$(CC) -c $(LIBC)
+
+$(TARGET1): $(OBJ1) $(HEADERS)
+					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB)
 
 $(TARGET2): $(OBJ2)
 					$(CC) $(CFLAGS) -o $(TARGET2) $(OBJ2)
@@ -24,6 +35,9 @@ $(TARGET2): $(OBJ2)
 $(TARGET3): $(OBJ3)
 					$(CC) $(CFLAGS) -o $(TARGET3) $(OBJ3)
 
+$(TARGETLIB): $(LIBOBJ) $(LIBHEADERS)
+					ar rs $@ $^ 
+				
 clean: 
-				rm -f $(TARGET1) $(TARGET2) $(TARGET3) *.o 
+				rm -f $(TARGET1) $(TARGET2) $(TARGET3) $(TARGETLIB) *.o 
 
