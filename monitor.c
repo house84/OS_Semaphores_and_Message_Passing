@@ -25,23 +25,15 @@
 #include <time.h>
 #include "monitor.h"
 
-//Global Variable Defaults
-
-//int m = 2; 								//Default Number of Producers
-int n = 6; 								//Default Number of Consumers
-int mytime = 100;					//Default time before Program Termination
-char logfile[100]; 				//Default logfile name
-
 
 int main(int argc, char *argv[]){
 
-	//Initialize Signal Handler
+	//Initialize signal handling for CTRL+C
 	signal(SIGINT, signalHandler); 
 
-	//Set logfile Default
+	//Set logfile Default 
 	memset(logfile, '\0', sizeof(logfile)); 
-	strcpy(logfile, "logfile"); 
-	
+	strcpy(logfile, "logfile");  
 	
 	//Parse input Args
 	int c = 0; 
@@ -76,7 +68,7 @@ int main(int argc, char *argv[]){
 									break; 
 
 				case 't': //Set program termination timer default mytime = 100
-									mytime = atoi(optarg);
+									myTimer = atoi(optarg);
 									break; 
 									
 				case ':': //Arg Required
@@ -90,11 +82,36 @@ int main(int argc, char *argv[]){
 		}
 	}
 
-	//Test Args
-	printf("-o: %s  -p: %d  -c: %d  -t: %d\n", logfile, m, n, mytime);
 
-	//Test Calling Library
-	testPrint(m); 
+	//Initialize Timer
+	setTimer(myTimer); 
+
+	//Set Shared Memory 
+	setSHMemory();  
+	
+	//Set Logfile Pointer and Name
+	openLogFile(); 
+
+	//Close Logfile
+	closeLogFile(); 
+
+	//====TESTING SHARED MEMORY==========
+	
+				shmptr->x = 10; 
+				strcpy(shmptr->logFileName, logfile); 
+
+				//Test SHMemory
+				testSHM(); 
+
+				//Test Calling Library
+				testPrint(); 
+	
+	//====END TESTING SHARED MEMORY========
+
+
+	//Free Shared Memory
+	freeSHMemory(); 
+
 
 	return 0; 
 

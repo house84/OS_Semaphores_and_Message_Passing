@@ -6,9 +6,8 @@ LIBPATH = -L . -l
 TARGETLIB = libmonitor.a
 LIBOBJ = monitorfunc.o 
 LIBC = monitorfunc.c
-LIBHEADERS = shared.h
 
-HEADERS = monitor.h
+HEADERS = monitor.h shared.h
 
 TARGET1 = monitor
 OBJ1 = monitor.o
@@ -26,7 +25,7 @@ ALL: $(TARGETLIB) $(TARGET1) $(TARGET2) $(TARGET3)
 $(LIBOBJ): $(LIBC)
 					$(CC) -c $(LIBC)
 
-$(TARGET1): $(OBJ1) $(HEADERS)
+$(TARGET1): $(OBJ1)
 					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB)
 
 $(TARGET2): $(OBJ2)
@@ -35,7 +34,7 @@ $(TARGET2): $(OBJ2)
 $(TARGET3): $(OBJ3)
 					$(CC) $(CFLAGS) -o $(TARGET3) $(OBJ3)
 
-$(TARGETLIB): $(LIBOBJ) $(LIBHEADERS)
+$(TARGETLIB): $(LIBOBJ) $(HEADERS)
 					ar rs $@ $^ 
 				
 clean: 
