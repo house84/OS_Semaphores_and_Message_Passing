@@ -89,6 +89,9 @@ int main(int argc, char *argv[]){
 	//Set Shared Memory 
 	setSHMemory();  
 	
+	//Set Sem
+	//setSHMSem(3); 
+	
 	//Set Logfile Pointer and Name
 	openLogFile(); 
 
@@ -108,10 +111,12 @@ int main(int argc, char *argv[]){
 	
 	//====END TESTING SHARED MEMORY========
 
-
+	
 	//Free Shared Memory
 	freeSHMemory(); 
 
+	//Free Sem
+//	freeSHMSem(); 
 
 	return 0; 
 

@@ -16,8 +16,10 @@ void signalHandler(int); 							//Signal Handler
 void setTimer(int); 									//Start Timer
 void setSHMemory(); 									//Initialize Shared Memory
 void freeSHMemory(); 									//Detatch & Delete Shared Memory
-void openLogFile(); 										//Set Log File PTR Create File
+void openLogFile(); 									//Set Log File PTR Create File
 void closeLogFile(); 									//Close Log File
+void setSHMSem(int); 									//Initialize Sem Memory Resources
+void freeSHMSem(); 										//Release Memory For Sem
 
 extern int m; 												//Number of Producers
 extern int n; 												//Number of Consumers

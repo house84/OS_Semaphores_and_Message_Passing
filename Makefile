@@ -1,5 +1,6 @@
 CC = gcc
 CFLAGS = -g
+LDLIBS = -lm -lpthread -lrt
 LDFLAGS =
 LIBPATH = -L . -l 
 
@@ -26,13 +27,13 @@ $(LIBOBJ): $(LIBC)
 					$(CC) -c $(LIBC)
 
 $(TARGET1): $(OBJ1)
-					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB)
+					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB) $(LDLIBS)
 
 $(TARGET2): $(OBJ2)
-					$(CC) $(CFLAGS) -o $(TARGET2) $(OBJ2)
+					$(CC) $(CFLAGS) -o $(TARGET2) $(OBJ2) $(LDLIBS)
 
 $(TARGET3): $(OBJ3)
-					$(CC) $(CFLAGS) -o $(TARGET3) $(OBJ3)
+					$(CC) $(CFLAGS) -o $(TARGET3) $(OBJ3) $(LDLIBS)
 
 $(TARGETLIB): $(LIBOBJ) $(HEADERS)
 					ar rs $@ $^ 

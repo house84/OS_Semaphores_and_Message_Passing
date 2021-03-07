@@ -16,6 +16,8 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/wait.h>
+#include <sys/sem.h>
+#include <sys/ipc.h>
 #include <limits.h>
 #include <errno.h>
 #include <math.h>
@@ -26,13 +28,18 @@
 #include "monitor.h"
 
 
-//=== Variables for Memory Allocation ===//
+//=== Variables for Shared Memory Among Child Processes ===//
 key_t key; 												//shm Key
 size_t memSize; 									//Variable to hold shm size
 int shmid; 												//shm id
 struct sharedMemory *shmptr; 			//Shared Memory Resource
 pid_t *pidArray; 									//Array of Processes
 int totalProc = 0; 								//Variable to Store processes
+
+//=== Shared Memory Variables for Semaphores ===//
+key_t semKey; 										//Semaphore Key
+int shmidSem; 										//shm id for Semaphore
+struct sembuf sem_b; 							//sem struct
 
 //=== Program Parameter Variables ===//
 int m = 2; 												//Default Number of Producers
@@ -123,26 +130,69 @@ void closeLogFile(){
 }
 
 
+//=== Initialize Semaphore Resources ===//
+void setSHMSem(int numSems){
+
+	//Set SemKey
+	if(( semKey = ftok("monitor.c", 0)) == -1){
+			
+			perror("monitor: ERROR: Failure to generate semKey ftok() ");
+			exit(EXIT_FAILURE); 
+	}
+
+	if((shmidSem = semget(semKey, 3, IPC_CREAT | IPC_EXCL )) == -1){
+
+		perror("monitor: ERROR: Failed to semget() "); 
+		exit(EXIT_FAILURE); 
+	}
+	
+	//Create Semaphore/s
+//	int i; 
+//	for(i = 0; i < numSems; ++i){
+
+//		if(semctl(shmidSem, i, SETVAL, 1) == -1){
+			
+//			perror("monitor: ERROR: Failed to create semaphore semctl() ");
+//			exit(EXIT_FAILURE); 
+//		}
+//	}
+}
+
+
+//=== Free Semaphore Resources ===//
+void freeSHMSem(){
+
+	if( semctl(shmidSem, 0, IPC_RMID) == -1){
+
+
+
+		perror("monitor: ERROR: Failed to release Sem memory semctl() ");
+		exit(EXIT_FAILURE); 
+	
+	}
+}
+
+
 //=== Initialize Shared Memory Resources ===//
 void setSHMemory(){
 	
-	//Generate key
-	key = ftok("Makefile", 'a'); 
+	//Generate Key
+	if(( key = ftok("Makefile", 'a')) == -1){
+			
+			perror("monitor: ERROR: Failure to generate key ftok() ");
+			exit(EXIT_FAILURE); 
+	}
 	
 	//Variable for easy adjust Dynamic SHMemory Size 
 	memSize = sizeof(struct sharedMemory); 
 
 	//Allocate Memory and Set ID
-	shmid = shmget(key, sizeof(memSize), IPC_CREAT | S_IRUSR | S_IWUSR); 
-
-	//Error Handling
-	if( shmid == -1 ){
+	if((shmid = shmget(key, sizeof(memSize), IPC_CREAT | S_IRUSR | S_IWUSR))== -1){ 
 
 		perror("monitor: ERROR: Failed shmget() "); 
 		exit(EXIT_FAILURE); 
 	
 	}
-
 
 	//Attatch Memory Location to Pointer
 	shmptr = (struct sharedMemory*) shmat(shmid, NULL, 0); 
