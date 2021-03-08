@@ -9,17 +9,19 @@
 #define SHARED_H 
 
 #include <semaphore.h>
+#define semBufLength 10									//set buffer Length for global Access
+
+enum Sems{mutex, availableSpace, availableProducts}; 
+//mutex = 1   													Ensure Mutual Exclusion
+//availableSpace = semBufLenth					Size of Buffer: Amount of space available to producer
+//availableProducts = 0 								Amount of Products available to Consumer 		
 
 struct sharedMemory {
-  
-//	extern semaphore mutex; 				//To Get Exclusive access to Buffer
-//	extern semaphore empty(20); 		//Number of available Buffers
-//	extern semaphore full(0); 			//Initialize to Zero
-	
 	
 	//Dev Testing Variables
-	int x; 
-	char  logFileName[100]; 
+	int x; 																//Testing Int
+	char  logFileName[100];								//Logfile Name
+	int * semBuffer[semBufLength]; 				//memory Addresses for Products Initialize to NULL
 
 };
 

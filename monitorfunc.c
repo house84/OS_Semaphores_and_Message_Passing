@@ -39,7 +39,7 @@ int totalProc = 0; 								//Variable to Store processes
 //=== Shared Memory Variables for Semaphores ===//
 key_t semKey; 										//Semaphore Key
 int shmidSem; 										//shm id for Semaphore
-struct sembuf sem_b; 							//sem struct
+struct sembuf sob;	 							//sem struct
 
 //=== Program Parameter Variables ===//
 int m = 2; 												//Default Number of Producers
@@ -131,40 +131,51 @@ void closeLogFile(){
 
 
 //=== Initialize Semaphore Resources ===//
-void setSHMSem(int numSems){
+void setSHMSem(int bufferSize){
 
 	//Set SemKey
-	if(( semKey = ftok("monitor.c", 0)) == -1){
+	if(( semKey = ftok("monitor.c", 'A')) == -1){
 			
 			perror("monitor: ERROR: Failure to generate semKey ftok() ");
 			exit(EXIT_FAILURE); 
 	}
 
-	if((shmidSem = semget(semKey, 3, IPC_CREAT | IPC_EXCL )) == -1){
+	if((shmidSem = semget(semKey, 3, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR )) == -1){
 
 		perror("monitor: ERROR: Failed to semget() "); 
 		exit(EXIT_FAILURE); 
 	}
 	
-	//Create Semaphore/s
-//	int i; 
-//	for(i = 0; i < numSems; ++i){
 
-//		if(semctl(shmidSem, i, SETVAL, 1) == -1){
+	//=== Create Semaphore ===// 
+
+	//Semaphore 0-Mutex is  Mutual Exclusion (set to 1 when available and 0 when used)
+	if((semctl(shmidSem, mutex, SETVAL, 1)) == -1){
 			
-//			perror("monitor: ERROR: Failed to create semaphore semctl() ");
-//			exit(EXIT_FAILURE); 
-//		}
-//	}
+			perror("monitor: ERROR: Failed to create semaphore semctl() ");
+			exit(EXIT_FAILURE); 
+		}
+	
+	//Semphore 1-availableSpace is Size of Buffer, space available for produced items
+	if((semctl(shmidSem, availableSpace, SETVAL, bufferSize)) == -1){
+			
+			perror("monitor: ERROR: Failed to create semaphore semctl() ");
+			exit(EXIT_FAILURE); 
+		}
+	
+	//Semaphore 2-availalbeProducts is initialized to zero 
+	if((semctl(shmidSem, availableProducts, SETVAL, 0)) == -1){
+			
+			perror("monitor: ERROR: Failed to create semaphore semctl() ");
+			exit(EXIT_FAILURE); 
+		}
 }
 
 
 //=== Free Semaphore Resources ===//
 void freeSHMSem(){
 
-	if( semctl(shmidSem, 0, IPC_RMID) == -1){
-
-
+	if(( semctl(shmidSem, 0, IPC_RMID)) == -1){
 
 		perror("monitor: ERROR: Failed to release Sem memory semctl() ");
 		exit(EXIT_FAILURE); 
@@ -240,6 +251,8 @@ void signalHandler(int sig){
 	//Detatch & Delete SHMemory
 	freeSHMemory(); 
 
+	//Free SHM Semaphore
+	void freeSHMSem();
 	
 	//===Terminate Child Processes===//
 	int i; 
