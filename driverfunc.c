@@ -2,7 +2,7 @@
  * Author: Nick House
  * Project: Semaphores and Message Passing
  * Course: CS-4760 Operating Systems, Spring 2021
- * File Name: mainfunc.c
+ * File Name: driverfunc.c
  */
 
 #include <string.h>
@@ -25,7 +25,7 @@
 #include <signal.h>
 #include <time.h>
 #include "shared.h"
-//#include "monitor.h"
+#include "driver.h"
 
 
 //=== Variables for Shared Memory Among Child Processes ===//

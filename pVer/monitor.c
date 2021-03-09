@@ -2,7 +2,7 @@
  * Author: Nick House
  * Project: Semaphores and Message Passing
  * Course: CS-4760 Operating Systems, Spring 2021
- * File Name: main.c
+ * File Name: monitor.c
  */
 
 #include <semaphore.h>
@@ -24,25 +24,18 @@
 #include <signal.h>
 #include <time.h>
 #include "monitor.h"
-#include "main.h"
-#include "shared.h"
 
 
 int main(int argc, char *argv[]){
 
-//=========== Initialize signal handling for CTRL+C ===========//
-//*************************************************************//
-	
+	//Initialize signal handling for CTRL+C
 	signal(SIGINT, signalHandler); 
 
-	//=== Set logfile Default ===//
+	//Set logfile Default 
 	memset(logfile, '\0', sizeof(logfile)); 
 	strcpy(logfile, "logfile");  
 	
-
-//===================== Parse input Args ======================//
-//*************************************************************//
-	
+	//Parse input Args
 	int c = 0; 
 
 	while((c = getopt(argc, argv, "ho:p:c:t:")) != -1){
@@ -90,9 +83,6 @@ int main(int argc, char *argv[]){
 	}
 
 
-//========= Initialize Program Setting and Resources =========//
-//************************************************************//
-
 	//Initialize Timer
 	setTimer(myTimer); 
 
@@ -109,8 +99,8 @@ int main(int argc, char *argv[]){
 	closeLogFile(); 
 
 
-	//=======TESTING SHARED MEMORY=========
-	//*************************************
+	//====TESTING SHARED MEMORY==========
+	
 				shmptr->x = 10; 
 				strcpy(shmptr->logFileName, logfile); 
 
@@ -119,61 +109,9 @@ int main(int argc, char *argv[]){
 
 				//Test Calling Library
 				testPrint(); 
-	//*************************************
+	
 	//====END TESTING SHARED MEMORY========
-	
 
-//============== Monitor Producers/Consumers ==============// 
-//*********************************************************//
-//enum proCon { producer, consumer }; 
-//
-//Requirements
-//Fork no more than 20 processes at a time
-//Fork Producers and Consumers 
-//int mc = 0; //Count of forked producers, m = producers needed
-//int nc = 0; //Count of forked consumers, n = consumers needed
-//while (i < 20 && i != m+n ) {  
-//	
-//	if( i % 2 && mc < m ){ 
-//		
-//		forkChild(producer); 
-//		mc++; 
-//	
-//	}
-//	else if( nc < n ) { 
-//		
-//		forkChild(consumer); 
-//		
-//		nc++; 
-//	}
-//	
-//	++i; 
-//}
-//
-//while(i < m+n ){
-//
-//
-//	if( i % 2 && mc < m ){ 
-//
-//		wait(); //Wait for Some Producer Semaphore
-//		forkChild(producer); 
-//		mc++; 
-//	}
-//	else if( nc < n ){ 
-//		
-//		wait(); //Wait for Some Consumer Semaphore
-//		forkChild(consumer); 
-//		nc++; 
-//
-//	}
-//
-//	++i;
-//}
-	
-
-//================= Free Memory Resources =================//
-//*********************************************************//
-	
 	//Free Shared Memory
 	freeSHMemory(); 
 

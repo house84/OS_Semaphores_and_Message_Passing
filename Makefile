@@ -4,18 +4,18 @@ LDLIBS = -lm -lpthread -lrt
 LDFLAGS =
 LIBPATH = -L . -l 
 
-TARGETLIB = libmonitor.a
-LIBOBJ = monitorfunc.o 
-LIBC = monitorfunc.c
+TARGETLIB = libdriver.a
+LIBOBJ = driverfunc.o 
+LIBC = driverfunc.c
 
-TARGETLIB2 = semHandling.a
-LIBOBJ2 = semHandling.o
-LIBC2 = semHandling.c
+TARGETLIB2 = libmonitor.a
+LIBOBJ2 = monitor.o
+LIBC2 = monitor.c
 
-HEADERS = monitor.h shared.h
+HEADERS = driver.h shared.h
 
 TARGET1 = monitor
-OBJ1 = monitor.o
+OBJ1 = driver.o
 
 TARGET2 = consumer
 OBJ2 = consumer.o

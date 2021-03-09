@@ -2,11 +2,13 @@
  * Author: Nick House
  * Project: Semaphores and Message Passing
  * Course: CS-4760 Operating Systems, Spring 2021
- * File Name: main.h
+ * File Name: driver.h
  */
 
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef MONITOR_H
+#define MONITOR_H
+
+#include "shared.h"
 
 void testPrint();											//For Dev Testing
 void testSHM(); 											//For Dev Testing SHM
@@ -22,6 +24,8 @@ void freeSHMSem(); 										//Release Memory For Sem
 extern int m; 												//Number of Producers
 extern int n; 												//Number of Consumers
 extern int myTimer; 									//Default timer value
-extern struct sharedMemory *shmptr;   //Shmptr
+extern char logfile[100]; 						//Char Arr for Logfile name
+extern FILE * logFilePtr;							//Set Logfile Ptr
+extern struct sharedMemory *shmptr; 	//Shared Memory Pointer 
 
 #endif
