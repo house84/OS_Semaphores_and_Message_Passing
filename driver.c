@@ -24,6 +24,7 @@
 #include <signal.h>
 #include <time.h>
 #include "driver.h"
+#include "monitor.h"
 
 
 int main(int argc, char *argv[]){
@@ -54,7 +55,7 @@ int main(int argc, char *argv[]){
 									exit(EXIT_SUCCESS); 
 									break; 
 				
-				case 'o': //Create Logfile Name Pointer default = logile
+				case 'o': //Create Logfile Name Pointer default = logfile
 									memset(logfile, '\0', sizeof(logfile)); 
 									strcpy(logfile, optarg); 
 									break; 
@@ -90,20 +91,31 @@ int main(int argc, char *argv[]){
 	setSHMemory();  
 	
 	//Set Sem
-	setSHMSem(20); 
+	setSHMSem(); 
+
+	//shmptr->x = 10; 
+	strcpy(shmptr->logfile, logfile);
+
+	//Allocate pidArr space
+	allocatePidArr(m+n); 
 	
 	//Set Logfile Pointer and Name
-	openLogFile(); 
+//	openLogfile(); 
 
 	//Close Logfile
-	closeLogFile(); 
+//	closeLogfile(); 
 
 
 	//====TESTING SHARED MEMORY==========
 	
-				shmptr->x = 10; 
-				strcpy(shmptr->logFileName, logfile); 
 
+				//Spawn(idx, type)-> Type process:: producer = 0, consumer = 1
+				spawn(1, 0); 
+				spawn(2,1); 
+
+				//Allow Children to die
+				while(wait(NULL) > 0); 
+				
 				//Test SHMemory
 				testSHM(); 
 
@@ -111,7 +123,7 @@ int main(int argc, char *argv[]){
 				testPrint(); 
 	
 	//====END TESTING SHARED MEMORY========
-
+	
 	//Free Shared Memory
 	freeSHMemory(); 
 

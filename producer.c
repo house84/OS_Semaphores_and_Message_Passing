@@ -20,6 +20,8 @@ int main(int argc, char *argv[]){
 	
 	pid_t p = getpid();                   //Get Process PID
 	int idx = atoi(argv[1]);              //Get index
+	int shmid = atoi(argv[2]);            //Get shmid
+	int shmidSem = atoi(argv[3]);         //Get shmidSem
 	
 	fprintf(stderr,"Producer %d, PID: %d has been created\n", idx, p); 
 
@@ -31,7 +33,7 @@ int main(int argc, char *argv[]){
 	while(i < 3 ){    //Testing Condition
 		++i;            //Testing Condition 
 
-		produce(p, idx);                 //Call Produce in Monitor
+		produce(p, idx, shmid, shmidSem);     //Call Produce in Monitor
 		
 		fprintf(stderr,"Producer %d, PID: %d is going to sleep\n", idx, p); 
 

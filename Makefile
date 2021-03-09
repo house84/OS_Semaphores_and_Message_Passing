@@ -34,7 +34,7 @@ $(LIBOBJ2): $(LIBC2)
 					$(CC) -c $(LIBC2)
 
 $(TARGET1): $(OBJ1)
-					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB) $(LDLIBS)
+					$(CC) $(CFLAGS) -o $(TARGET1) $(OBJ1) $(TARGETLIB) $(LDLIBS) $(TARGETLIB2) $(LIDLIBS)
 
 $(TARGET2): $(OBJ2)
 					$(CC) $(CFLAGS) -o $(TARGET2) $(OBJ2) $(TARGETLIB2) $(LDLIBS)

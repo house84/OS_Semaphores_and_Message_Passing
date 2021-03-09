@@ -20,11 +20,21 @@
 #include "monitor.h"
 
 //===== Initialize Variables for Shared Memory  ====//
+//key_t key;                                   //shm key
+//size_t memSize;                              //Variable to hold memsize
+int shmid;                                   //hold shmid
 struct sharedMemory *shmptr;                 //Shared Memory Pointer
-time_t t;                                    //Variable for time
-struct sembuf sops;                          //sem struct for semops
 
 FILE *logfilePtr;                            //Pointer 
+char logfile[100];                           //Logfile name
+
+//==== Variables for Sem ====//
+struct sembuf sops;                          //sem struct for semops
+//key_t semKey;                                //Semaphore Key
+int shmidSem;                                //Sem id
+
+time_t t;                                    //Variable for time
+
 
 
 void logEvent(); 
@@ -33,8 +43,28 @@ int addProdcut();
 static void semWait(); 
 static void semSignal(); 
 
+
+//Set Shared Mem Resouces
+void setShared(int myshmid, int myshmidSem){
+
+	shmid = myshmid; 
+	shmptr = (struct sharedMemory *) shmat(shmid, NULL, 0); 
+	shmidSem = myshmidSem; 
+
+}
+
+//Free shmptr
+void freeShmPtr(){
+
+	shmdt(shmptr); 
+}
+
+
+
 //Produce Product
-int * produce(pid_t pid, int idx){
+int * produce(pid_t pid, int idx, int myshmid, int myshmidSem){
+
+	setShared(myshmid, myshmidSem);           //Set Shm
 	
 	fprintf(stderr,"Produer %d PID: %d entered monitor\n", idx, pid); 
 
@@ -48,8 +78,10 @@ int * produce(pid_t pid, int idx){
 	logEvent(pid, idx, producer);             //Log event
 	semSignal(mutex);                         //Give up Mutual Exclusion
 	semSignal(availableProducts);             //Signal Product Count
+	freeShmPtr();                             //Free SHM Pointer
 
 	fprintf(stderr,"Producer %d PID: %d leaving monitor\n", idx, pid); 
+
 	return xptr;  
 }
 
@@ -73,8 +105,10 @@ int addProduct(int * x){
 
 	
 //Consume Product 
-int * consume(pid_t pid, int idx){
+int * consume(pid_t pid, int idx, int myshmid, int myshmidSem){
 
+	setShared(myshmid, myshmidSem);           //Set Shm
+	
 	fprintf(stderr, "Consumer %d PID: %d entered monitor\n", idx, pid); 
 
 	semWait(availableProducts);              //wait for products
@@ -84,6 +118,7 @@ int * consume(pid_t pid, int idx){
 	logEvent(pid, idx, consumer);            //Log event
 	semSignal(mutex);                        //Release Mutual Exclusion
 	semSignal(availableSpace);               //Increment avaialbleSpace
+	freeShmPtr();                             //Free SHM Pointer
 
 	fprintf(stderr,"Consumer %d PID: %d leaving monitor\n", idx, pid); 
 
@@ -139,7 +174,7 @@ int makeRandom(int upper){
 }
 
 
-//logEvent
+//=== logEvent
 void logEvent(pid_t pid, int idx, int who){
 
 	char myWho[9]; 
@@ -153,7 +188,38 @@ void logEvent(pid_t pid, int idx, int who){
 
 		strcpy(myWho,"Consumer"); 
 	}
+
+	openLogfile(); 
 		
-	fprintf(stderr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
+	//fprintf(stderr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
+
+	fprintf(logfilePtr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
+
+	closeLogfile(); 
+
+}
+
+
+//=== Open Logfile
+void openLogfile(){
+
+	fprintf(stderr, "Logfile Name: %s\n", shmptr->logfile); 
+
+	//Set ptr and Create/Open File append/read
+	logfilePtr = fopen(shmptr->logfile, "a+"); 
+
+	//Err Handling
+	if( logfilePtr == NULL ){
+
+		perror("monitor: ERROR: Failed to open logfile "); 
+		exit(EXIT_FAILURE); 
+	
+	}
+}
+
+//=== Close LogFile
+void closeLogfile(){
+
+	fclose(logfilePtr); 
 
 }

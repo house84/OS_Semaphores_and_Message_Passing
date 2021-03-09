@@ -26,34 +26,39 @@
 #include <time.h>
 #include "shared.h"
 #include "driver.h"
+#include "monitor.h" 
 
 
 //=== Variables for Shared Memory Among Child Processes ===//
 key_t key; 												//shm Key
 size_t memSize; 									//Variable to hold shm size
 int shmid; 												//shm id
-struct sharedMemory *shmptr; 			//Shared Memory Resource
-pid_t *pidArray; 									//Array of Processes
-int totalProc = 0; 								//Variable to Store processes
+//struct sharedMemory *shmptr; 			//Shared Memory Resource
+pid_t *pidArray; 
+pid_t *consumerArray; 						//Array of ConsumerProcesses
+int consumerProc = 0; 								//Variable to Store processes
+int totalProc = 0; 
+int pidCount = 0; 
+int consumerCount = 0; 
+int producerCount = 0; 
 
 //=== Shared Memory Variables for Semaphores ===//
 key_t semKey; 										//Semaphore Key
 int shmidSem; 										//shm id for Semaphore
-struct sembuf sob;	 							//sem struct
+//struct sembuf sops;	 							//sem struct
 
 //=== Program Parameter Variables ===//
 int m = 2; 												//Default Number of Producers
 int n = 6; 												//Default Number of COnsumers
 int myTimer = 100; 								//Default time before Program Termination
-char logfile[100]; 								//Default Char Arr for logfile
-FILE *logFilePtr; 								//Pointer for Logfile Name
+//char logfile[100]; 								//Default Char Arr for logfile
+//FILE *logfilePtr; 								//Pointer for Logfile Name
 
 
-//=== Shared Local Variables ===//
+//=== Local Variables ===//
 static struct itimerval timer; 		//Set Global Timer Struct
-
-
-
+bool flag = false;                //Flag to temp block Termination 
+bool sigFlag = false;             //Flag to indicate termination begun
 
 
 //======================= Dev TESTING FUNCS =========================//
@@ -61,7 +66,7 @@ static struct itimerval timer; 		//Set Global Timer Struct
 //=== Test Func Print Variables ===//
 void testPrint(){
 
-	printf("Logfile: %s  m: %d  n: %d  Timer: %d\n", logfile, m, n, myTimer); 
+	fprintf(stderr,"Logfile: %s  m: %d  n: %d  Timer: %d\n", logfile, m, n, myTimer); 
 
 }
 
@@ -69,7 +74,7 @@ void testPrint(){
 //Test SH Memory
 void testSHM(){
 
-	fprintf(stderr, "SHM X: %d  SHM Logname: %s\n", shmptr->x, shmptr->logFileName); 
+	fprintf(stderr,"SHM X: %d  SHM Logname: %s\n", shmptr->x, shmptr->logfile); 
 
 }
 
@@ -79,8 +84,86 @@ void testSHM(){
 
 
 //***********************************************************//
-//****************** Monitor Functions **********************//
+//****************** Driver  Functions **********************//
 //***********************************************************//
+
+
+//==== Allocate Space for pidArr ====//
+void allocatePidArr(int size){
+	
+	pidArray = (int*) malloc(size*sizeof(int)); 
+	
+	totalProc = m + n; 
+}
+
+//==== Spawn Child Process ====//
+void spawn(int idx, int type){
+ 
+
+	//Check for Termination Signal Recieved
+	if( sigFlag == true ) { return; }
+
+	//Initialize Variable
+	pid_t process_id; 
+
+	//Create Child Process
+	if((process_id = fork()) < 0){
+
+		perror("driver: ERROR: failed to create proccess fork() "); 
+		exit(EXIT_FAILURE); 
+
+	}
+	
+
+	if( process_id == 0 ){
+
+		fprintf(stderr,"INSIDE SPAWN, smhid: %d  shmidSem: %d\n", shmid, shmidSem); 
+		
+		//Temp Block Signal Handler from Terminating
+		flag = true; 
+	
+		//add Child id to array 
+		pidArray[pidCount] = process_id;  
+		process_id; 
+		++pidCount; 
+
+		flag = false; 
+
+		char buffer_idx[10];
+		sprintf(buffer_idx, "%d", idx); 
+
+		char buffer_shmid[50];
+		sprintf(buffer_shmid, "%d", shmid); 
+
+		char buffer_shmidSem[50]; 
+		sprintf(buffer_shmidSem, "%d", shmidSem); 
+
+
+		if( type == producer ){
+
+			if(execl("./producer", "producer", buffer_idx, buffer_shmid, buffer_shmidSem, (char*) NULL) == -1){
+
+				perror("driver: ERROR: Failed to create Producer, execl() "); 
+				exit(EXIT_FAILURE); 
+			}
+
+			++producerCount;  
+		}
+		
+		else{
+
+			if(execl("./consumer", "consumer", buffer_idx, buffer_shmid, buffer_shmidSem, (char*) NULL) == -1){
+
+				perror("driver: ERROR: Failed to create Consumer, execl() "); 
+				exit(EXIT_FAILURE); 
+			}
+
+			++consumerCount; 
+		}
+	  
+		exit(EXIT_SUCCESS); 
+	}
+}
 
 
 //=== Set Program Termination Timer ===//
@@ -106,32 +189,8 @@ void setTimer(int t){
 }
 
 
-//=== Set Logfile Pointer and Create File ===//
-void openLogFile(){
-
-	//Set PTR & Create/Open File Append/Read
-	logFilePtr = fopen(logfile, "a+"); 
-
-	//Err Check 
-	if( logFilePtr == NULL ){
-
-		perror("monitor: ERROR: Failed to open/create Logfile "); 
-		exit(EXIT_FAILURE); 
-	
-	}
-}
-
-
-//=== Close LogFile ===//
-void closeLogFile(){
-
-	fclose(logFilePtr); 
-
-}
-
-
 //=== Initialize Semaphore Resources ===//
-void setSHMSem(int bufferSize){
+void setSHMSem(){
 
 	//Set SemKey
 	if(( semKey = ftok("monitor.c", 'A')) == -1){
@@ -157,7 +216,7 @@ void setSHMSem(int bufferSize){
 		}
 	
 	//Semphore 1-availableSpace is Size of Buffer, space available for produced items
-	if((semctl(shmidSem, availableSpace, SETVAL, bufferSize)) == -1){
+	if((semctl(shmidSem, availableSpace, SETVAL, semBufLength)) == -1){
 			
 			perror("monitor: ERROR: Failed to create semaphore semctl() ");
 			exit(EXIT_FAILURE); 
@@ -236,6 +295,9 @@ void freeSHMemory(){
 //=== Terminate Processes and Free Memory if Signal initiated ===//
 void signalHandler(int sig){
 
+	//set sigFlag to stop any further child processes
+	sigFlag = true; 
+	
 	//Check for Signal Type
 	if( sig == SIGINT ){
 
@@ -247,12 +309,17 @@ void signalHandler(int sig){
 
 	}
 
+	//Allow Potential Process to add PID to array
+	while(flag == true){}
 
 	//Detatch & Delete SHMemory
 	freeSHMemory(); 
 
 	//Free SHM Semaphore
 	void freeSHMSem();
+
+	//Close File
+	fclose(logfilePtr); 
 	
 	//===Terminate Child Processes===//
 	int i; 

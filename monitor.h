@@ -10,14 +10,22 @@
 
 #include "shared.h"
 
-enum prod_cons{producer, consumer}; 
+//enum prod_cons{producer, consumer}; 
 
 int makeRandom(int);                     //Create Random Variable 		
-int * consume(pid_t, int);               //Consume Variabe at address
-int * produce(pid_t, int);               //Produce Variabe put at address
+int * consume(pid_t, int, int, int);     //Consume Variabe at address
+int * produce(pid_t, int, int, int);     //Produce Variabe put at address
+void openLogfile(); 
+void closeLogfile(); 
 
 extern struct sharedMemory *shmptr; 		 //Monitor Access to Shm
-//extern logfile[100];                     //Logfile Name
-//extern FILE * logfilePtr;                //Logfile Pointer
+extern char logfile[100];                //Logfile Name
+extern FILE * logfilePtr;                //Logfile Pointer
+//extern key_t key; 
+//extern size_t memSize; 
+extern int shmid; 
+//extern key_t semKey; 
+extern int shmidSem; 
+
 
 #endif

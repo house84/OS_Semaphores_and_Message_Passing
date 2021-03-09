@@ -16,6 +16,8 @@ int main(int argc, char *argv[]){
 
 	pid_t c = getpid();             //Get Process ID
 	int idx = atoi(argv[1]);        //Get Index of Consumer 
+	int shmid = atoi(argv[2]); 			//Get shmid
+	int shmidSem = atoi(argv[3]); 	//get shmidSem
 
 	//Print Message to Terminal -> Consumer Created
 	fprintf(stderr, "Consumer %d, PID: %d has been created\n", idx, c); 
@@ -30,7 +32,7 @@ int main(int argc, char *argv[]){
 	fprintf(stderr, "Consumer %d, PID: %d has woken up\n", idx, c); 
 
 	//Call Consume to get variable
-	consume(c, idx); 
+	consume(c, idx, shmid, shmidSem); 
 
 	//Print Program termination Message	
 	fprintf(stderr, "Consumer %d, PID: %d Terminating\n", idx, c); 
