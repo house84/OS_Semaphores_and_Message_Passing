@@ -5,8 +5,8 @@
  * File Name: driver.h
  */
 
-#ifndef MONITOR_H
-#define MONITOR_H
+#ifndef DRIVER_H
+#define DRIVER_H
 
 #include "shared.h"
 

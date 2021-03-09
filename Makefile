@@ -12,7 +12,7 @@ TARGETLIB2 = libmonitor.a
 LIBOBJ2 = monitor.o
 LIBC2 = monitor.c
 
-HEADERS = driver.h shared.h
+HEADERS = driver.h shared.h monitor.h
 
 TARGET1 = monitor
 OBJ1 = driver.o
