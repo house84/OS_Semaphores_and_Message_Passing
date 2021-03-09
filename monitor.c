@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <semaphore.h>
+#include <string.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -43,7 +44,7 @@ int * produce(pid_t pid, int idx){
 	xptr = &x;                                //int -> ptr
 	semWait(availableSpace);                  //Wait for Space in Buffer
 	semWait(mutex);                           //Wait for Mutual Exclusion
-	addProduct(xptr);                         //Add x ptr -> buffer            
+	//addProduct(xptr);                         //Add x ptr -> buffer
 	logEvent(pid, idx, producer);             //Log event
 	semSignal(mutex);                         //Give up Mutual Exclusion
 	semSignal(availableProducts);             //Signal Product Count
@@ -79,7 +80,7 @@ int * consume(pid_t pid, int idx){
 	semWait(availableProducts);              //wait for products
 	semWait(mutex);                          //wait for mutual exclusion
 	int *x; 
-	x = consumeProduct();                    //Consume Product
+	//x = consumeProduct();                    //Consume Product
 	logEvent(pid, idx, consumer);            //Log event
 	semSignal(mutex);                        //Release Mutual Exclusion
 	semSignal(availableSpace);               //Increment avaialbleSpace
@@ -141,6 +142,18 @@ int makeRandom(int upper){
 //logEvent
 void logEvent(pid_t pid, int idx, int who){
 
+	char myWho[9]; 
+	
 	//if who == 0 producer, if who == 1 consumer
+	if(who == 0){
+		
+		strcpy(myWho,"Producer"); 
+	
+	}	else{
+
+		strcpy(myWho,"Consumer"); 
+	}
+		
+	fprintf(stderr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
 
 }

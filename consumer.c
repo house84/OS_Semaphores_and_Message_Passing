@@ -15,7 +15,7 @@
 int main(int argc, char *argv[]){
 
 	pid_t c = getpid();             //Get Process ID
-	int idx = atoi(argv[1]);        //Get Index of Consumer
+	int idx = atoi(argv[1]);        //Get Index of Consumer 
 
 	//Print Message to Terminal -> Consumer Created
 	fprintf(stderr, "Consumer %d, PID: %d has been created\n", idx, c); 

@@ -10,20 +10,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <stdbool.h> 
 #include "shared.h"
-#include "monitor.h"
-
-
-//Shared Mem Pointer
-struct sharedMemory *shmptr; 				
+#include "monitor.h"		
 
 
 //Pass as args shmid, shmidSem, 
 int main(int argc, char *argv[]){
-
-	 
 	
+	pid_t p = getpid();                   //Get Process PID
+	int idx = atoi(argv[1]);              //Get index
+	
+	fprintf(stderr,"Producer %d, PID: %d has been created\n", idx, p); 
 
-	return 0; 
+//	while(true){                          //Always be producing
+
+//for testing 
+  int i = 0;	      //Testing Condition
+	
+	while(i < 3 ){    //Testing Condition
+		++i;            //Testing Condition 
+
+		produce(p, idx);                 //Call Produce in Monitor
+		
+		fprintf(stderr,"Producer %d, PID: %d is going to sleep\n", idx, p); 
+
+		sleep(makeRandom(5));              //Sleep for random 1-5 Seconds
+
+		fprintf(stderr,"Producer %d, PID: %d has woken up\n", idx, p); 
+
+	}
+   
+	exit(EXIT_SUCCESS); 
 
 }
