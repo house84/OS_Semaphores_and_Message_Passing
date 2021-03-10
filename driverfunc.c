@@ -34,9 +34,10 @@ key_t key; 												//shm Key
 size_t memSize; 									//Variable to hold shm size
 int shmid; 												//shm id
 //struct sharedMemory *shmptr; 			//Shared Memory Resource
-pid_t *pidArray; 
-pid_t *consumerArray; 						//Array of ConsumerProcesses
-int consumerProc = 0; 								//Variable to Store processes
+pid_t *pidArray;                  //Pid of All Processes 
+pid_t *consumerArray; 						//Array of Consumer Processes
+pid_t *producerArray;             //Array of Producer Processes
+int consumerProc = 0; 						//Variable to Store processes
 int totalProc = 0; 
 int pidCount = 0; 
 int consumerCount = 0; 
@@ -45,14 +46,15 @@ int producerCount = 0;
 //=== Shared Memory Variables for Semaphores ===//
 key_t semKey; 										//Semaphore Key
 int shmidSem; 										//shm id for Semaphore
-//struct sembuf sops;	 							//sem struct
+struct sembuf sops;	 							//sem struct
 
 //=== Program Parameter Variables ===//
 int m = 2; 												//Default Number of Producers
 int n = 6; 												//Default Number of COnsumers
 int myTimer = 100; 								//Default time before Program Termination
 //char logfile[100]; 								//Default Char Arr for logfile
-//FILE *logfilePtr; 								//Pointer for Logfile Name
+FILE *logfilePtr; 								//Pointer for Logfile Name
+time_t t; 												//Time variable
 
 
 //=== Local Variables ===//
@@ -61,39 +63,71 @@ bool flag = false;                //Flag to temp block Termination
 bool sigFlag = false;             //Flag to indicate termination begun
 
 
-//======================= Dev TESTING FUNCS =========================//
-
-//=== Test Func Print Variables ===//
-void testPrint(){
-
-	fprintf(stderr,"Logfile: %s  m: %d  n: %d  Timer: %d\n", logfile, m, n, myTimer); 
-
-}
-
-
-//Test SH Memory
-void testSHM(){
-
-	fprintf(stderr,"SHM X: %d  SHM Logname: %s\n", shmptr->x, shmptr->logfile); 
-
-}
-
-//++++++++++++++++++++++++END DEV FUNC TEST++++++++++++++++++++++++++//
-
-
-
-
 //***********************************************************//
 //****************** Driver  Functions **********************//
 //***********************************************************//
 
+//initiate Logfile Pointer
+void initializeLogfile(){
 
-//==== Allocate Space for pidArr ====//
+	logfilePtr = fopen(shmptr->logfile, "a+");
+	shmptr->logfilePtr = logfilePtr; 
+
+	fclose(shmptr->logfilePtr); 
+}
+
+
+//====Check if Producers (m)  is Greater than Consumers (n)
+bool greaterThan(int m, int n){
+
+	if(m >= n){
+
+		return true; 
+	}
+	else{ 
+		
+		return false; 
+  }
+}
+
+//==== Allocate Space for process Arrays ====//
 void allocatePidArr(int size){
 	
 	pidArray = (int*) malloc(size*sizeof(int)); 
 	
-	totalProc = m + n; 
+	consumerArray = (int*) malloc(n*sizeof(int)); 
+
+	producerArray = (int*) malloc(m*sizeof(int));
+
+	shmptr->firstEntry = false; 
+
+	totalProc = n+m; 
+
+}
+
+
+//==== Wait for Consumer Processes to End ===//
+void waitConsumer(){
+
+	sops.sem_num = completeConsumers;
+	sops.sem_op = 0; 
+	sops.sem_flg = 0; 
+
+	semop( shmid, &sops, 1 );  
+
+}
+
+
+
+//==== Create Shared Mem Buffer ====//
+void intializeBuffer(){
+
+	int i; 
+	for(i = 0; i < semBufLength; ++i){
+
+		shmptr->semBuffer[i] = 0;
+
+	}
 }
 
 //==== Spawn Child Process ====//
@@ -115,9 +149,7 @@ void spawn(int idx, int type){
 	}
 	
 
-	if( process_id == 0 ){
-
-		fprintf(stderr,"INSIDE SPAWN, smhid: %d  shmidSem: %d\n", shmid, shmidSem); 
+	if( process_id == 0 ){ 
 		
 		//Temp Block Signal Handler from Terminating
 		flag = true; 
@@ -127,6 +159,7 @@ void spawn(int idx, int type){
 		process_id; 
 		++pidCount; 
 
+		//Release Block
 		flag = false; 
 
 		char buffer_idx[10];
@@ -146,7 +179,8 @@ void spawn(int idx, int type){
 				perror("driver: ERROR: Failed to create Producer, execl() "); 
 				exit(EXIT_FAILURE); 
 			}
-
+			
+			producerArray[producerCount] = process_id; 
 			++producerCount;  
 		}
 		
@@ -157,7 +191,8 @@ void spawn(int idx, int type){
 				perror("driver: ERROR: Failed to create Consumer, execl() "); 
 				exit(EXIT_FAILURE); 
 			}
-
+			
+			consumerArray[consumerCount] = process_id; 
 			++consumerCount; 
 		}
 	  
@@ -193,13 +228,13 @@ void setTimer(int t){
 void setSHMSem(){
 
 	//Set SemKey
-	if(( semKey = ftok("monitor.c", 'A')) == -1){
+	if(( semKey = ftok("driver.c", 'A')) == -1){
 			
 			perror("monitor: ERROR: Failure to generate semKey ftok() ");
 			exit(EXIT_FAILURE); 
 	}
 
-	if((shmidSem = semget(semKey, 3, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR )) == -1){
+	if((shmidSem = semget(semKey, 4, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR )) == -1){
 
 		perror("monitor: ERROR: Failed to semget() "); 
 		exit(EXIT_FAILURE); 
@@ -225,6 +260,13 @@ void setSHMSem(){
 	//Semaphore 2-availalbeProducts is initialized to zero 
 	if((semctl(shmidSem, availableProducts, SETVAL, 0)) == -1){
 			
+			perror("monitor: ERROR: Failed to create semaphore semctl() ");
+			exit(EXIT_FAILURE); 
+		}
+
+	//Semaphore 3- completeConsumers is initialized to number of consumers: n
+	if((semctl(shmidSem, completeConsumers, SETVAL, n+2)) == -1){
+
 			perror("monitor: ERROR: Failed to create semaphore semctl() ");
 			exit(EXIT_FAILURE); 
 		}
@@ -297,30 +339,43 @@ void signalHandler(int sig){
 
 	//set sigFlag to stop any further child processes
 	sigFlag = true; 
+
+	openLogfile(); 
+
+	time(&t); 
 	
 	//Check for Signal Type
 	if( sig == SIGINT ){
 
 		fprintf(stderr, "\nProgram Terminated by User\n"); 
 	
-	}else{
+		fprintf(shmptr->logfilePtr, "\nTime: %sProgram Terminated by User\n", ctime(&t)); 
+	
+	}if( sig == 3126 ){
 
+		fprintf(stderr, "\nAll Items Have been Consumed\n"); 
+	
+		fprintf(shmptr->logfilePtr, "\nTime: %sAll Items Have been Consumed\n", ctime(&t)); 
+	
+	}else {
+		
 		fprintf(stderr, "\nProgram Terminated due to Timer\n"); 
 
+		fprintf(shmptr->logfilePtr, "\nTime: %sProgram Terminated due to Timer\n", ctime(&t)); 
 	}
+	
+	fprintf(shmptr->logfilePtr,"\n//************** END FILE ENTRY **************//\n\n"); 
 
+	closeLogfile(); 
 	//Allow Potential Process to add PID to array
 	while(flag == true){}
 
-	//Detatch & Delete SHMemory
-	freeSHMemory(); 
-
-	//Free SHM Semaphore
-	void freeSHMSem();
-
-	//Close File
-	fclose(logfilePtr); 
+	//Free Sem List
+	freeSHMSem(); 
 	
+	//Detatch & Delete SHMemory
+	freeSHMemory();
+
 	//===Terminate Child Processes===//
 	int i; 
 	for( i = 0; i < totalProc; ++i ){

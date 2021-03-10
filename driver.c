@@ -86,6 +86,38 @@ int main(int argc, char *argv[]){
 
 	//Initialize Timer
 	setTimer(myTimer); 
+	
+	//Check Arg Parameters
+	if( m < 1 || n < 1 || myTimer < 1 ){
+
+		fprintf(stderr,"All Args must be a positive integer greater than Zero\n");
+		fprintf(stderr,"Args: Producers: %d  Consumers: %d  Time: %d  Logfile: %s\n", m, n, myTimer, logfile); 
+		
+		exit(EXIT_FAILURE); 
+	
+	}
+
+
+	//=== Check if There are more Producers than Consumers
+	if( greaterThan(m, n) == true ){
+
+		fprintf(stderr,"There must be more Consumers than Producers.\n"); 
+		fprintf(stderr,"User passed: Consumers: %d  Producers: %d\n", n, m); 
+		
+		exit(EXIT_FAILURE); 
+	} 
+
+
+	//=== Check for too many producers
+	if( m > 18 ){
+
+		fprintf(stderr,"Too many Producers, in order to allow enough Consumer processes\n");		
+		fprintf(stderr,"There must be no more than 18 producers created and running concurrently\n"); 
+
+		exit(EXIT_FAILURE); 
+	
+	}
+
 
 	//Set Shared Memory 
 	setSHMemory();  
@@ -93,36 +125,60 @@ int main(int argc, char *argv[]){
 	//Set Sem
 	setSHMSem(); 
 
-	//shmptr->x = 10; 
+	//Set Consumed Iterator
+	shmptr->consumed = 0; 
+
+	//Add logfile Name to ShMemory
 	strcpy(shmptr->logfile, logfile);
 
+	//Initialize logfileptr
+//	initializeLogfile(); 
+
+	//Initialize Buffer Array for Producers and Consumers
+	void initializeBuffer(); 
+	
 	//Allocate pidArr space
 	allocatePidArr(m+n); 
+
+
+//============ Create Child Processes =============//
+//*************************************************//
+
+	//Create Producer Processes
+	int i; 
+	for( i = 0; i < m; ++i ){
+
+		//spawn(idx, type)
+		spawn(i+1, producer);
 	
-	//Set Logfile Pointer and Name
-//	openLogfile(); 
+	}
 
-	//Close Logfile
-//	closeLogfile(); 
-
-
-	//====TESTING SHARED MEMORY==========
+	int j = 0;  
 	
+	//Create Consumer Processes Limited by 
+	while( j < n){
+ 
 
-				//Spawn(idx, type)-> Type process:: producer = 0, consumer = 1
-				spawn(1, 0); 
-				spawn(2,1); 
+		if(i == 19){
 
-				//Allow Children to die
-				while(wait(NULL) > 0); 
-				
-				//Test SHMemory
-				testSHM(); 
+			wait(NULL); 
+			--i; 
+		}
 
-				//Test Calling Library
-				testPrint(); 
-	
-	//====END TESTING SHARED MEMORY========
+		spawn(j+1, consumer); 
+
+		++i; 
+		++j; 
+	} 
+
+	//Allow Child Processes for testing
+	while(wait(NULL)>0){
+
+		if(shmptr->consumed == n){
+			
+			signalHandler(3126); 
+		}
+	} 
 	
 	//Free Shared Memory
 	freeSHMemory(); 

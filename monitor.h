@@ -13,8 +13,8 @@
 //enum prod_cons{producer, consumer}; 
 
 int makeRandom(int);                     //Create Random Variable 		
-int * consume(pid_t, int, int, int);     //Consume Variabe at address
-int * produce(pid_t, int, int, int);     //Produce Variabe put at address
+int consume(pid_t, int, int, int);     //Consume Variabe at address
+void produce(pid_t, int, int, int);     //Produce Variabe put at address
 void openLogfile(); 
 void closeLogfile(); 
 

@@ -25,13 +25,7 @@ int main(int argc, char *argv[]){
 	
 	fprintf(stderr,"Producer %d, PID: %d has been created\n", idx, p); 
 
-//	while(true){                          //Always be producing
-
-//for testing 
-  int i = 0;	      //Testing Condition
-	
-	while(i < 3 ){    //Testing Condition
-		++i;            //Testing Condition 
+	while(true){                          //Always be producing 
 
 		produce(p, idx, shmid, shmidSem);     //Call Produce in Monitor
 		

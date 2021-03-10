@@ -16,12 +16,12 @@
 #include <sys/wait.h>
 #include <sys/sem.h>
 #include <sys/ipc.h>
+#include <stdbool.h>
+#include <time.h>
 #include "shared.h"
 #include "monitor.h"
 
 //===== Initialize Variables for Shared Memory  ====//
-//key_t key;                                   //shm key
-//size_t memSize;                              //Variable to hold memsize
 int shmid;                                   //hold shmid
 struct sharedMemory *shmptr;                 //Shared Memory Pointer
 
@@ -30,15 +30,13 @@ char logfile[100];                           //Logfile name
 
 //==== Variables for Sem ====//
 struct sembuf sops;                          //sem struct for semops
-//key_t semKey;                                //Semaphore Key
 int shmidSem;                                //Sem id
-
 time_t t;                                    //Variable for time
 
 
 
 void logEvent(); 
-int * consumeProduct(); 
+int consumeProduct(); 
 int addProdcut(); 
 static void semWait(); 
 static void semSignal(); 
@@ -62,41 +60,39 @@ void freeShmPtr(){
 
 
 //Produce Product
-int * produce(pid_t pid, int idx, int myshmid, int myshmidSem){
+void  produce(pid_t pid, int idx, int myshmid, int myshmidSem){
 
 	setShared(myshmid, myshmidSem);           //Set Shm
 	
-	fprintf(stderr,"Produer %d PID: %d entered monitor\n", idx, pid); 
+	fprintf(stderr,"Producer %d PID: %d entered monitor\n", idx, pid); 
 
 	int x;                                   
-	x = makeRandom(100);                      //Generate Random For Product
-	int *xptr; 																//Creat ptr
-	xptr = &x;                                //int -> ptr
+	//x = makeRandom(100);                      //Generate Random For Product
 	semWait(availableSpace);                  //Wait for Space in Buffer
 	semWait(mutex);                           //Wait for Mutual Exclusion
-	//addProduct(xptr);                         //Add x ptr -> buffer
-	logEvent(pid, idx, producer);             //Log event
+	x = addProduct();                            //Add x ptr -> buffer
+	logEvent(pid, idx, producer, x);          //Log event
 	semSignal(mutex);                         //Give up Mutual Exclusion
 	semSignal(availableProducts);             //Signal Product Count
 	freeShmPtr();                             //Free SHM Pointer
 
 	fprintf(stderr,"Producer %d PID: %d leaving monitor\n", idx, pid); 
-
-	return xptr;  
+ 
 }
 
 
 //Produce Product 
-int addProduct(int * x){
-
+int addProduct(){
+	 
 	int i; 
 	for( i = 0; i < semBufLength; ++i){
 
-		if(shmptr->semBuffer[i] == NULL){
+		if(shmptr->semBuffer[i] == 0){
 
-			shmptr->semBuffer[i] = x; 
-
-			return 0; 
+			shmptr->semBuffer[i] = ++shmptr->x; 
+			int x = shmptr->x; 
+			
+			return x; 
 		}
 	}
 
@@ -105,62 +101,80 @@ int addProduct(int * x){
 
 	
 //Consume Product 
-int * consume(pid_t pid, int idx, int myshmid, int myshmidSem){
+int consume(pid_t pid, int idx, int myshmid, int myshmidSem){
 
-	setShared(myshmid, myshmidSem);           //Set Shm
+	setShared(myshmid, myshmidSem);          //Set Shm
 	
 	fprintf(stderr, "Consumer %d PID: %d entered monitor\n", idx, pid); 
 
 	semWait(availableProducts);              //wait for products
 	semWait(mutex);                          //wait for mutual exclusion
-	int *x; 
-	//x = consumeProduct();                    //Consume Product
-	logEvent(pid, idx, consumer);            //Log event
+	int x; 
+	x = consumeProduct();                    //Consume Product 
+	logEvent(pid, idx, consumer, x);         //Log event
 	semSignal(mutex);                        //Release Mutual Exclusion
 	semSignal(availableSpace);               //Increment avaialbleSpace
-	freeShmPtr();                             //Free SHM Pointer
+	freeShmPtr();                            //Free SHM Pointer
 
 	fprintf(stderr,"Consumer %d PID: %d leaving monitor\n", idx, pid); 
 
 	return x; 
 }
 
+
 //Consume Variable at address
-int * consumeProduct(){
+int consumeProduct(){
 	
 	int i; 
-	int *x; 
+	int x; 
 
-	for( i = 0; i < semBufLength; ++i ){
+	for( i = 0; i < semBufLength; ++i ){ 
 
-		if( shmptr->semBuffer[i] != NULL ){
+		if( shmptr->semBuffer[i] != 0){
 
 				x = shmptr->semBuffer[i]; 
-				shmptr->semBuffer[i] = NULL; 
+				shmptr->semBuffer[i] = 0;
+				
+				//Track Items Picked up by Consumers
+				semWait(completeConsumers); 
+				shmptr->consumed++; 
 
 				return x; 
 		}
 	}
 	
-	i = -1; 
-	x = &i; 
-
-	return x; 
+	return -1; 
 } 
 
 
 //Wait Function Decrament and wait
-static void semWait(int sem){
+static void semWait(int sem){ 
+	
+	sops.sem_num = sem;         //Assign Semaphore 
+	sops.sem_op = -1;           //Decrament Wait
+	sops.sem_flg = 0;           //flgs
 
-	printf("SemWait int: %d\n", sem); 
+	if( semop( shmidSem, &sops, 1 ) == -1 ){
+
+			perror("monitor: ERROR: semWait() failed -> semop() "); 
+			exit(EXIT_FAILURE); 
+	}
 }
+
 
 
 //Signal Function increment
 static void semSignal(int sem){
 
-	printf("semSignal int: %d\n", sem); 
+	sops.sem_num = sem;         //Assign Semaphore
+	sops.sem_op = 1;            //Incement Wait
+	sops.sem_flg = 0;           //flgs
 
+	if( semop( shmidSem, &sops, 1 ) == -1 ){
+
+			perror("monitor: ERROR: semSignal() failed -> semop() "); 
+			exit(EXIT_FAILURE); 
+	}		
 }
 
 
@@ -175,9 +189,9 @@ int makeRandom(int upper){
 
 
 //=== logEvent
-void logEvent(pid_t pid, int idx, int who){
+void logEvent(pid_t pid, int idx, int who, int product){
 
-	char myWho[9]; 
+	char myWho[9];
 	
 	//if who == 0 producer, if who == 1 consumer
 	if(who == 0){
@@ -191,10 +205,19 @@ void logEvent(pid_t pid, int idx, int who){
 
 	openLogfile(); 
 		
-	//fprintf(stderr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
+	//Get Time
+	time(&t);  
 
-	fprintf(logfilePtr, "%s: %d PID: %d in LogEvent\n", myWho, idx, pid); 
+	if( shmptr->firstEntry == false ){
+		
+		fprintf(logfilePtr,"\n//===================OPEN LOG====================//\n"); 
+		
+		shmptr->firstEntry = true; 
+	}
+		
 
+	fprintf(logfilePtr, "\nTime: %s%s: %d PID: %d Product: %d \n",ctime(&t), myWho, idx, pid, product); 
+	
 	closeLogfile(); 
 
 }
@@ -203,10 +226,9 @@ void logEvent(pid_t pid, int idx, int who){
 //=== Open Logfile
 void openLogfile(){
 
-	fprintf(stderr, "Logfile Name: %s\n", shmptr->logfile); 
-
 	//Set ptr and Create/Open File append/read
-	logfilePtr = fopen(shmptr->logfile, "a+"); 
+	logfilePtr = fopen(shmptr->logfile, "a+");
+	shmptr->logfilePtr = logfilePtr; 
 
 	//Err Handling
 	if( logfilePtr == NULL ){
