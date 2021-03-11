@@ -10,12 +10,12 @@
 
 #include "shared.h"
 
-void signalHandler(int); 							//Signal Handler 
-void setTimer(int); 									//Start Timer
-void setSHMemory(); 									//Initialize Shared Memory
-void freeSHMemory(); 									//Detatch & Delete Shared Memory
-void setSHMSem(); 									  //Initialize Sem Memory Resources
-void freeSHMSem(); 										//Release Memory For Sem
+void signalHandler(int);              //Signal Handler 
+void setTimer(int);                   //Start Timer
+void setSHMemory();                   //Initialize Shared Memory
+void freeSHMemory();                  //Detatch & Delete Shared Memory
+void setSHMSem();                     //Initialize Sem Memory Resources
+void freeSHMSem();                    //Release Memory For Sem
 void allocatePidArr(int);             //Set Memory Size of pidArr
 void spawn(int, int);                 //Spawn Child (0=Producer 1 = Consumer)
 void initializeBuffer();              //Initialize buffer to Null;
