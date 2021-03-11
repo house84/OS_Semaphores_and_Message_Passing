@@ -30,33 +30,33 @@
 
 
 //=== Variables for Shared Memory Among Child Processes ===//
-key_t key; 												//shm Key
-size_t memSize; 									//Variable to hold shm size
-int shmid; 												//shm id
+key_t key;                        //shm Key
+size_t memSize;                   //Variable to hold shm size
+int shmid;                        //shm id
 pid_t *pidArray;                  //Pid of All Processes 
-pid_t *consumerArray; 						//Array of Consumer Processes
+pid_t *consumerArray;             //Array of Consumer Processes
 pid_t *producerArray;             //Array of Producer Processes
-int consumerProc = 0; 						//Variable to Store processes
+int consumerProc = 0;             //Variable to Store processes
 int totalProc = 0; 
 int pidCount = 0; 
 int consumerCount = 0; 
 int producerCount = 0; 
 
 //=== Shared Memory Variables for Semaphores ===//
-key_t semKey; 										//Semaphore Key
-int shmidSem; 										//shm id for Semaphore
-struct sembuf sops;	 							//sem struct
+key_t semKey;                     //Semaphore Key
+int shmidSem;                     //shm id for Semaphore
+struct sembuf sops;               //sem struct
 
 //=== Program Parameter Variables ===//
-int m = 2; 												//Default Number of Producers
-int n = 6; 												//Default Number of COnsumers
-int myTimer = 100; 								//Default time before Program Termination
-FILE *logfilePtr; 								//Pointer for Logfile Name
-time_t t; 												//Time variable
+int m = 2;                        //Default Number of Producers
+int n = 6;                        //Default Number of COnsumers
+int myTimer = 100;                //Default time before Program Termination
+FILE *logfilePtr;                 //Pointer for Logfile Name
+time_t t;                         //Time variable
 
 
 //=== Local Variables ===//
-static struct itimerval timer; 		//Set Global Timer Struct
+static struct itimerval timer;    //Set Global Timer Struct
 bool flag = false;                //Flag to temp block Termination 
 bool sigFlag = false;             //Flag to indicate termination begun
 
