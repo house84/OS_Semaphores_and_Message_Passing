@@ -12,7 +12,7 @@ Created Files: (default) logfile, can be named by user
 
 Included Files: driver.c, driver.h, driverfunc.c -> libdriver.a
                 monitor.c -> libmonitor.a, monitor.h, shared.h
-								producer.c, consumer.c, Makefile, README
+	        producer.c, consumer.c, Makefile, README
 
 =======================================================================
 =======================================================================
@@ -46,7 +46,7 @@ What this program does:
 		1) Time
 		2) Type: Producer or Consumer
 		3) Processes Index
-    4) Processes PID
+                4) Processes PID
 		5) Item entered or retrieved from the buffer
 
 		During exectution each process will print updates to the terminal 
@@ -69,18 +69,19 @@ How to Use this Program:
     1) Execute Makefile
 	    $ make
 	
-	  2) Execute monitor program
-	 		$ ./monitor [-h][-o logfile][-p m][-c n][-t time]
+    2) Execute monitor program
+	    
+	    $ ./monitor [-h][-o logfile][-p m][-c n][-t time]
 
-			*For m producers and n consumers. 
+	    *For m producers and n consumers. 
     	
-		USAGE: 
+    USAGE: 
 
-			-h            Displays Help/Usage Page
-			-o logfile    Name of the logfile to save logs; defalut: logfile
-			-p m          Number of producers; default: m = 2
-			-c n          Number of consumers; default: n = 6
-			-t time       Time(sec) before processes are killed; defalut: 100
+	-h            Displays Help/Usage Page
+	-o logfile    Name of the logfile to save logs; defalut: logfile
+	-p m          Number of producers; default: m = 2
+	-c n          Number of consumers; default: n = 6
+	-t time       Time(sec) before processes are killed; defalut: 100
 
 =======================================================================
 =======================================================================
