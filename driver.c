@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
 		switch(c) {
 
-				case 'h':	//Print Help/Usage then Exit
+				case 'h': //Print Help/Usage then Exit
 									printf("\n//=== %s Usage Page ===//\n", argv[0]); ; 
 									printf("\n%s [-h] [-o logfile] [-p m] [-c n] [-t time]\n", argv[0]); 
 									printf("\n%s -h \t\t\t-> This Usage Page\n", argv[0]);  
