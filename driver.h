@@ -19,11 +19,11 @@ void freeSHMSem();                    //Release Memory For Sem
 void allocatePidArr(int);             //Set Memory Size of pidArr
 void spawn(int, int);                 //Spawn Child (0=Producer 1 = Consumer)
 void initializeBuffer();              //Initialize buffer to Null;
-void initializeLogfile(); 						//Logfile Set up
+void initializeLogfile();             //Logfile Set up
 bool greaterThan(int, int);           //Is arg 1 greater than arg 2
 FILE *logfilePtr;                     //Open Logfile
-extern int m; 												//Number of Producers
-extern int n; 												//Number of Consumers
-extern int myTimer; 									//Default timer value
+extern int m;                         //Number of Producers
+extern int n;                         //Number of Consumers
+extern int myTimer;                   //Default timer value
 
 #endif
