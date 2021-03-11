@@ -18,8 +18,8 @@ int consume(pid_t, int, int, int);       //Consume Variabe at address
 bool produce(pid_t, int, int, int);      //Produce Variabe put at address
 void openLogfile();                      //Open Logfil 
 void closeLogfile();                     //Close Logfile
-void semSignal(int); 	                   //Allow driver to signal producers
-extern struct sharedMemory *shmptr; 		 //Monitor Access to Shm
+void semSignal(int);                     //Allow driver to signal producers
+extern struct sharedMemory *shmptr;      //Monitor Access to Shm
 extern char logfile[100];                //Logfile Name
 extern FILE * logfilePtr;                //Logfile Pointer
 extern int shmid;                        //sh Memory Id
