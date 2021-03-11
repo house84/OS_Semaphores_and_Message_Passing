@@ -34,12 +34,8 @@ int shmidSem;                                //Sem id
 time_t t;                                    //Variable for time
 
 
-
 void logEvent(); 
-int consumeProduct(); 
-int addProdcut(); 
-static void semWait(); 
-static void semSignal(); 
+static void semWait();  
 
 
 //Set Shared Mem Resouces
@@ -68,16 +64,14 @@ bool produce(pid_t pid, int idx, int myshmid, int myshmidSem){
 
 	setShared(myshmid, myshmidSem);           //Set Shm
 	
-//	if(idx == 1 ){ setProduce(); }						//Set Produce 
-	
-	fprintf(stderr,"Produce BOOL = %d\n", shmptr->produce); 
-	
 	int x;                                   
 	
 	semWait(availableSpace);                  //Wait for Space in Buffer
 	
-	if( shmptr->produce == false ) {
+	if( shmptr->produce == false ) {          //Produce? T/F
+		
 		semSignal(availableSpace); 
+		
 		return false; 
 	}
 
@@ -123,7 +117,7 @@ int consume(pid_t pid, int idx, int myshmid, int myshmidSem){
 
 	semWait(availableProducts);              //wait for products
 	semWait(mutex);                          //wait for mutual exclusion
-	int x; 
+	int x;                                   //Int to hold product 
 	x = consumeProduct();                    //Consume Product 
 	logEvent(pid, idx, consumer, x);         //Log event
 	semSignal(mutex);                        //Release Mutual Exclusion
@@ -178,7 +172,7 @@ static void semWait(int sem){
 
 
 //Signal Function increment
-static void semSignal(int sem){
+void semSignal(int sem){
 
 	sops.sem_num = sem;         //Assign Semaphore
 	sops.sem_op = 1;            //Incement Wait

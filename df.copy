@@ -104,6 +104,28 @@ void allocatePidArr(int size){
 }
 
 
+//==== Wait for Consumer Processes to End ===//
+//void waitConsumer(){
+//
+//	sops.sem_num = completeConsumers;
+//	sops.sem_op = 0; 
+//	sops.sem_flg = 0; 
+//
+//	semop( shmid, &sops, 1 );  
+//
+//}
+
+
+//=== Allow Producers chance to die ===//
+//void freeProducers(int mm){
+
+//	sops.sem_num = availableSpace; 
+//	sops.sem_op = mm; 
+//	sops.sem_flg = 0; 
+//
+//	semop( shmid, &sops, 1); 
+//}
+
 
 //==== Create Shared Mem Buffer ====//
 void intializeBuffer(){

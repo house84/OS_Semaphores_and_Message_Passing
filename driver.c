@@ -134,9 +134,6 @@ int main(int argc, char *argv[]){
 	//Add logfile Name to ShMemory
 	strcpy(shmptr->logfile, logfile);
 
-	//Initialize logfileptr
-//	initializeLogfile(); 
-
 	//Initialize Buffer Array for Producers and Consumers
 	void initializeBuffer(); 
 	
@@ -175,28 +172,29 @@ int main(int argc, char *argv[]){
 	} 
 
 
-	//Allow Child Processes for testing
+	//Allow Child Processes to Return
 	while(wait(NULL)>0){
 
+		//Track Completed Consumers
 		if(shmptr->consumed == n){
 
-			shmptr->produce = false; 
-//			freeProducers(); 
+			//Signal Producers
+			shmptr->produce = false;  
+		
+			//Free Up Producers 
+			semSignal(availableSpace); 
 
+			//Allow Producers to Return
 			while(wait(NULL)>0); 	
+
 		  break; 
 		}
 	} 
 	
 	
+	//Clean Up Memory
  	signalHandler(3126); 
 	
-	//Free Shared Memory
-//	freeSHMemory(); 
-
-	//Free Sem
-//	freeSHMSem(); 
-
 	return 0; 
 
 }
