@@ -184,16 +184,18 @@ int main(int argc, char *argv[]){
 //			freeProducers(); 
 
 			while(wait(NULL)>0); 	
-		//	signalHandler(3126); 
 		  break; 
 		}
 	} 
 	
+	
+ 	signalHandler(3126); 
+	
 	//Free Shared Memory
-	freeSHMemory(); 
+//	freeSHMemory(); 
 
 	//Free Sem
-	freeSHMSem(); 
+//	freeSHMSem(); 
 
 	return 0; 
 

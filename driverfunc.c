@@ -361,7 +361,7 @@ void signalHandler(int sig){
 	
 		fprintf(shmptr->logfilePtr, "\nTime: %sProgram Terminated by User\n", ctime(&t)); 
 	
-	}if( sig == 3126 ){
+	}else if( sig == 3126 ){
 
 		fprintf(stderr, "\nAll Items Have been Consumed\n"); 
 	
@@ -386,6 +386,8 @@ void signalHandler(int sig){
 	//Detatch & Delete SHMemory
 	freeSHMemory();
 
+	if( sig == 3126 ){ return; } 
+	
 	//===Terminate Child Processes===//
 	int i; 
 	for( i = 0; i < totalProc; ++i ){
