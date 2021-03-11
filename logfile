@@ -136,3 +136,29 @@ All Items Have been Consumed
 
 //************** END FILE ENTRY **************//
 
+
+//===================OPEN LOG====================//
+
+Time: Wed Mar 10 21:56:18 2021
+Producer: 1 PID: 6447 Product: 1 
+
+Time: Wed Mar 10 21:56:18 2021
+Producer: 2 PID: 6448 Product: 2 
+
+Time: Wed Mar 10 21:56:20 2021
+Producer: 1 PID: 6447 Product: 3 
+
+Time: Wed Mar 10 21:56:20 2021
+Producer: 2 PID: 6448 Product: 4 
+
+Time: Wed Mar 10 21:56:22 2021
+Producer: 1 PID: 6447 Product: 5 
+
+Time: Wed Mar 10 21:56:22 2021
+Producer: 2 PID: 6448 Product: 6 
+
+Time: Wed Mar 10 21:56:22 2021
+All Items Have been Consumed
+
+//************** END FILE ENTRY **************//
+
