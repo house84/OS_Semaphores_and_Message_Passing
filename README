@@ -1,5 +1,5 @@
-===================================================================
-===================================================================
+======================================================================
+======================================================================
 Author: Nick House
 
 Project: Semaphores and Message Passing
@@ -10,44 +10,213 @@ Directory Name: house.3
 
 Created Files: (default) logfile, can be named by user 
 
-Included Files: monitor.c, monitor.h, monitorfunc.c, producer.c, 
-								consumer.c, semHandling.c, monitor.h, shared.h
-								Makefile, README, .git
+Included Files: driver.c, driver.h, driverfunc.c -> libdriver.a
+                monitor.c -> libmonitor.a, monitor.h, shared.h
+								producer.c, consumer.c, Makefile, README
 
-====================================================================
-====================================================================
+=======================================================================
+=======================================================================
 
 What this program does:
 -----------------------
-		This program does ...
 
-    I am testing from testBranch
+		This program solves the Producer(p) Consumer(c) problem by using
+		forking child processes (each consumer and producer is its own 
+		forked process), shared memory, a monitor, semaphores, and static 
+		library. This program allows a user to define the number of 
+		producers processes to be forked so long as p>0 && p<c, these 
+		producer processes will continue to produce a random integer and 
+		store it in a shared memory buffer until all consumers processes
+		have consumed a product (integer) from the buffer and terminated. 
+		If the buffer is full the producers will wait until there is 
+		buffer space available to store their integer. Consumer processes
+		will wait until a producer process has stored a product in the 
+		buffer then consume that product and terminate. This program can
+		be terminated due to time or user intervention (ctrl+c), either 
+		of these events will cause the program to stop, free up memory
+		resources and kill child processes. 
 
-====================================================================
-====================================================================
+		This program will create a logfile that logs the beginning and end
+		of a new programming execution, and everytime a producer adds an 
+		integer to the buffer or a consumer retrieves an item from the 
+		buffer. 
+
+		Each Process entry gives the following information: 
+		
+		1) Time
+		2) Type: Producer or Consumer
+		3) Processes Index
+    4) Processes PID
+		5) Item entered or retrieved from the buffer
+
+		During exectution each process will print updates to the terminal 
+		when it is created, when it enters the monitor, when it exits the
+		monitor, and when it terminates. 
+
+		Each print will display the following to the terminal: 
+		
+		1) Type
+		2) Index
+		3) PID
+		4) What it is doing
+
+=======================================================================
+=======================================================================
 
 How to Use this Program: 
 ------------------------
 
+    1) Execute Makefile
+	    $ make
+	
+	  2) Execute monitor program
+	 		$ ./monitor [-h][-o logfile][-p m][-c n][-t time]
 
+			*For m producers and n consumers. 
+    	
+		USAGE: 
 
-====================================================================
-====================================================================
+			-h            Displays Help/Usage Page
+			-o logfile    Name of the logfile to save logs; defalut: logfile
+			-p m          Number of producers; default: m = 2
+			-c n          Number of consumers; default: n = 6
+			-t time       Time(sec) before processes are killed; defalut: 100
+
+=======================================================================
+=======================================================================
 
 Observations about this Program:
 --------------------------------
+		
+		This program uses semaphores to allow m producers and n consumers
+		to concurrently produce and consume some product. The application
+		for this problem makes sense for a driver to allow producers to 
+		create any given item into memory and pass an pointer to this item
+		into a shared buffer. The producer would then be free to either die
+		or create any given other product dictated by its driver. Once a 
+		product is in the buffer a consumer process then can retrieve this
+		memory pointer and do its own independent tasking for how ever long
+		it may need without obstructing the monitor or producers tasks. In 
+		this way many items can be produced and independently be processes
+		while preserving memory the shared memory space required. 
 
 
-====================================================================
-====================================================================
+=======================================================================
+=======================================================================
 
 git Log History:
 ----------------
 
+commit 5551ea038d533c9e6239279f68d946ec2f008764
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 13:47:16 2021 -0600
 
+    All tested and source files cleaned of testing comments
 
+commit efed06cee285de7ecc012d0d45e236045c6e0a3f
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 12:01:40 2021 -0600
 
+    Statements and clean up working
 
+commit d8a488630a823139494a8868ffa2733f698afbad
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 11:57:24 2021 -0600
 
+    Producers terminating nicely
 
+commit b0c9052c79a37ab9d54bb55681204d01fd310a51
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 11:00:12 2021 -0600
 
+    Removed Test
+
+commit 0f4370c24a25a1a44c5d3cc00918a2afad55e6e7
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 10:59:26 2021 -0600
+
+    Testing
+
+commit 4ec919484c97e805c44b3e9cfb0094794cec63f5
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Thu Mar 11 10:34:51 2021 -0600
+
+    Thurs Morning Commit to Test and debug
+
+commit fcbde51d850d5dcff45e37fd7899d202ca167710
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Wed Mar 10 23:14:42 2021 -0600
+
+    Cleaned Need to finish readme, continue testing
+
+commit 75534c3012d98484ff0e6c1977f8bd3e4281acc4
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Wed Mar 10 21:56:46 2021 -0600
+
+    Saved
+
+commit a9c32cbf07ec42a14c71e211d92600642953353c
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Wed Mar 10 00:27:39 2021 -0600
+
+    Finished project Tasks, Need to finish README and complete some more test cases and clean up code
+
+commit 1b77da7233238fade69aa441462d1b9e69ecfa46
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Tue Mar 9 15:05:14 2021 -0600
+
+    Tested Spawning and writing to logfile form child processes. Need to finish semaphores and implement process restrictions
+
+commit ec0796b7855b5e3c83a235d2bf1f75360e76cc77
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Tue Mar 9 10:11:54 2021 -0600
+
+    Producer, Consumer and Monitor execute individually, Need to add shared memory and sems then fork processes.
+
+commit 06467f1734f83dc1477cd9e7d9ef481558dc8fc3
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Tue Mar 9 01:42:26 2021 -0600
+
+    Added monitor funcitons, created consumer() and producer(), need to fix driver and monitor to create shared memory
+
+commit 8fedf33c62bcd020a30a0740ec56a3ae0f669937
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Mon Mar 8 22:51:04 2021 -0600
+
+    Changed Program Naming Structure for change in Monitor/Consumer/Producer Setup
+
+commit 09ab83af639c11f1d12e2abee5c1a2b1ec5d3f2d
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Mon Mar 8 22:36:26 2021 -0600
+
+    reverted to fd1d8ee
+
+commit fd1d8ee0e36f20c75de66f365925f3fb0060bcd3
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Sun Mar 7 22:44:18 2021 -0600
+
+    Created list of semaphores and destroy, created producer, created library for functions needed for Producer/Consumer problem, started README
+
+commit a1913ce590ec6cd188d9fbbdb2b9ecfeaddbd57e
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Sun Mar 7 00:30:11 2021 -0600
+
+    Semaphore Memory needs work issues w/ semctl()
+
+commit d0ca8b86f49a5f655f1aac1e6b913e9d51435046
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Sat Mar 6 12:19:25 2021 -0600
+
+    Added Shared Memory creation/deletion, Logfile Creation/deletion, Need to Create Semaphores Next
+
+commit c60e5b9368da96bd3d36aa4c047f877294af3ada
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Fri Mar 5 21:08:27 2021 -0600
+
+    Set up Static Library, Makefile and Started writing shared memory allocation.
+
+commit e1f95e18d4422e699dff8977937e667611597f78
+Author: Nick House <nh6gy@umsystem.edu>
+Date:   Tue Mar 2 23:34:43 2021 -0600
+
+    Initial Commit, Makefile, Monitor parses args complete
