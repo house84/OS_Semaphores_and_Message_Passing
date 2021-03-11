@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
 	int idx = atoi(argv[1]);              //Get index
 	int shmid = atoi(argv[2]);            //Get shmid
 	int shmidSem = atoi(argv[3]);         //Get shmidSem 
-	bool produceBool = true;							//Set Produce Logic 
+	bool produceBool = true;              //Set Produce Logic 
 
 	fprintf(stderr,"Producer %d, PID: %d has been created\n", idx, p); 
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[]){
 
 		fprintf(stderr,"Producer %d, PID: %d is going to sleep\n", idx, p); 
 
-		sleep(makeRandom(5));              //Sleep for random 1-5 Seconds
+		sleep(makeRandom(5));          //Sleep for random 1-5 Seconds
 
 		fprintf(stderr,"Producer %d, PID: %d has woken up\n", idx, p); 
 
