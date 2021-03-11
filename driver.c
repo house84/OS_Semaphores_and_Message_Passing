@@ -128,6 +128,9 @@ int main(int argc, char *argv[]){
 	//Set Consumed Iterator
 	shmptr->consumed = 0; 
 
+	//Set produce flag
+	shmptr->produce = true; 
+
 	//Add logfile Name to ShMemory
 	strcpy(shmptr->logfile, logfile);
 
@@ -171,12 +174,18 @@ int main(int argc, char *argv[]){
 		++j; 
 	} 
 
+
 	//Allow Child Processes for testing
 	while(wait(NULL)>0){
 
 		if(shmptr->consumed == n){
-			
-			signalHandler(3126); 
+
+			shmptr->produce = false; 
+//			freeProducers(); 
+
+			while(wait(NULL)>0); 	
+		//	signalHandler(3126); 
+		  break; 
 		}
 	} 
 	

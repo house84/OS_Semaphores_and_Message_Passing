@@ -118,6 +118,16 @@ void waitConsumer(){
 }
 
 
+//=== Allow Producers chance to die ===//
+void freeProducers(){
+
+	sops.sem_num = availableSpace; 
+	sops.sem_op = m; 
+	sops.sem_flg = 0; 
+
+	semop( shmid, &sops, 1); 
+}
+
 
 //==== Create Shared Mem Buffer ====//
 void intializeBuffer(){

@@ -57,26 +57,40 @@ void freeShmPtr(){
 	shmdt(shmptr); 
 }
 
+//set shmptr Bool
+void setProduce(){
 
+	shmptr->produce = true; 
+}
 
 //Produce Product
-void  produce(pid_t pid, int idx, int myshmid, int myshmidSem){
+bool produce(pid_t pid, int idx, int myshmid, int myshmidSem){
 
 	setShared(myshmid, myshmidSem);           //Set Shm
 	
-	fprintf(stderr,"Producer %d PID: %d entered monitor\n", idx, pid); 
-
+//	if(idx == 1 ){ setProduce(); }						//Set Produce 
+	
+	fprintf(stderr,"Produce BOOL = %d\n", shmptr->produce); 
+	
 	int x;                                   
-	//x = makeRandom(100);                      //Generate Random For Product
+	
 	semWait(availableSpace);                  //Wait for Space in Buffer
+	
+	if( shmptr->produce == false ) {
+		semSignal(availableSpace); 
+		return false; 
+	}
+
 	semWait(mutex);                           //Wait for Mutual Exclusion
-	x = addProduct();                            //Add x ptr -> buffer
+	x = addProduct();                         //Add x ptr -> buffer
 	logEvent(pid, idx, producer, x);          //Log event
 	semSignal(mutex);                         //Give up Mutual Exclusion
 	semSignal(availableProducts);             //Signal Product Count
 	freeShmPtr();                             //Free SHM Pointer
 
 	fprintf(stderr,"Producer %d PID: %d leaving monitor\n", idx, pid); 
+
+	return true; 
  
 }
 

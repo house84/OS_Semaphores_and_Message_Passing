@@ -21,6 +21,7 @@ void spawn(int, int);                 //Spawn Child (0=Producer 1 = Consumer)
 void waitConsumer();                  //Wait for Consumers to End
 void initializeBuffer();              //Initialize buffer to Null;
 void initializeLogfile(); 						//Logfile Set up
+void freeProducers(); 								//Allow Producers to die
 bool greaterThan(int, int);           //Is arg 1 greater than arg 2
 FILE *logfilePtr;                     //Open Logfile
 extern int m; 												//Number of Producers

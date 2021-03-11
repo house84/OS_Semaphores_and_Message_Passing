@@ -24,7 +24,8 @@ struct sharedMemory {
 	int x; 																//Testing Int
 	int consumed; 												//Consumed Items
 	bool firstEntry; 											//First Logfile Entry
-	char  logfile[100];   								//Logfile Name
+	bool produce;                       //Check if all Consumers are complete
+	char logfile[100];   								//Logfile Name
 	FILE *logfilePtr; 										//Shared Logfile
 	int semBuffer[semBufLength]; 				//memory Addresses for Products Initialize to NULL
 

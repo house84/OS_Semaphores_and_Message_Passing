@@ -21,14 +21,17 @@ int main(int argc, char *argv[]){
 	pid_t p = getpid();                   //Get Process PID
 	int idx = atoi(argv[1]);              //Get index
 	int shmid = atoi(argv[2]);            //Get shmid
-	int shmidSem = atoi(argv[3]);         //Get shmidSem
-	
+	int shmidSem = atoi(argv[3]);         //Get shmidSem 
+	bool produceBool = true;									//Set Produce Logic 
+
 	fprintf(stderr,"Producer %d, PID: %d has been created\n", idx, p); 
 
-	while(true){                          //Always be producing 
+	while(produceBool){                          //Always be producing 
 
-		produce(p, idx, shmid, shmidSem);     //Call Produce in Monitor
+		produceBool = produce(p, idx, shmid, shmidSem);     //Call Produce in Monitor
 		
+		if(produceBool == false ) { break; }
+
 		fprintf(stderr,"Producer %d, PID: %d is going to sleep\n", idx, p); 
 
 		sleep(makeRandom(5));              //Sleep for random 1-5 Seconds
@@ -36,6 +39,8 @@ int main(int argc, char *argv[]){
 		fprintf(stderr,"Producer %d, PID: %d has woken up\n", idx, p); 
 
 	}
+
+	fprintf(stderr,"Producer %d, PID %d is Terminating\n", idx, p); 
    
 	exit(EXIT_SUCCESS); 
 
